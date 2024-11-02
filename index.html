@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic-Tac Tournament</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      background-color: #f3f3f3;
+    }
+    h1 {
+      text-align: center;
+    }
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-gap: 5px;
+    }
+    .cell {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2em;
+      background-color: #fff;
+      cursor: pointer;
+      border: 1px solid #333;
+    }
+    .status {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>Tic-Tac Tournament</h1>
+    <div id="board" class="board"></div>
+    <div id="status" class="status">Your Turn (X)</div>
+    <button onclick="resetGame()">Restart Game</button>
+  </div>
+
+  <script>
+    const boardElement = document.getElementById('board');
+    const statusElement = document.getElementById('status');
+    let board = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 'X';
+    let gameActive = true;
+
+    // Initialize the board
+    function createBoard() {
+      boardElement.innerHTML = '';
+      board.forEach((cell, index) => {
+        const cellElement = document.createElement('div');
+        cellElement.classList.add('cell');
+        cellElement.dataset.index = index;
+        cellElement.addEventListener('click', playerMove);
+        cellElement.textContent = cell;
+        boardElement.appendChild(cellElement);
+      });
+    }
+
+    // Handle player's move
+    function playerMove(event) {
+      const index = event.target.dataset.index;
+      if (board[index] === '' && gameActive && currentPlayer === 'X') {
+        board[index] = 'X';
+        currentPlayer = 'O';
+        updateBoard();
+        checkWinner();
+        if (gameActive) {
+          setTimeout(aiMove, 500);
+        }
+      }
+    }
+
+    // Simple AI move
+    function aiMove() {
+      let availableMoves = board.map((cell, idx) => cell === '' ? idx : null).filter(idx => idx !== null);
+      if (availableMoves.length > 0) {
+        const randomIndex = availableMoves[Math.floor(Math.random() * availableMoves.length)];
+        board[randomIndex] = 'O';
+        currentPlayer = 'X';
+        updateBoard();
+        checkWinner();
+      }
+    }
+
+    // Update the board display
+    function updateBoard() {
+      const cells = document.querySelectorAll('.cell');
+      cells.forEach((cell, index) => {
+        cell.textContent = board[index];
+      });
+      statusElement.textContent = gameActive ? (currentPlayer === 'X' ? "Your Turn (X)" : "AI's Turn (O)") : '';
+    }
+
+    // Check if there's a winner
+    function checkWinner() {
+      const winningCombinations = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+        [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+        [0, 4, 8], [2, 4, 6]             // Diagonals
+      ];
+
+      let winner = null;
+      winningCombinations.forEach(combination => {
+        const [a, b, c] = combination;
+        if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+          winner = board[a];
+        }
+      });
+
+      if (winner) {
+        statusElement.textContent = winner === 'X' ? 'You Win!' : 'AI Wins!';
+        gameActive = false;
+      } else if (!board.includes('')) {
+        statusElement.textContent = "It's a Draw!";
+        gameActive = false;
+      }
+    }
+
+    // Reset the game
+    function resetGame() {
+      board = ['', '', '', '', '', '', '', '', ''];
+      currentPlayer = 'X';
+      gameActive = true;
+      createBoard();
+      statusElement.textContent = "Your Turn (X)";
+    }
+
+    createBoard();
+  </script>
+</body>
+  </html>
